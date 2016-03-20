@@ -1,0 +1,8 @@
+rules:
+    path: '~/Music/'
+actions:
+    -
+        binding: 's'
+        title: 'sync'
+        description: 'Synchronize with twilight.schube.eu:/home/plex/Music/.'
+        shell: 'echo "Sync!"'

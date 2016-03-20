@@ -1,0 +1,18 @@
+rules:
+    contains: '.git/'
+actions:
+    -
+        binding: l
+        title: pull
+        description: Pull from origin.
+        shell: git pull
+    -
+        binding: p
+        title: push
+        description: Push to origin
+        shell: git push
+    -
+        binding: c
+        title: commit
+        description: Commit
+        shell: git commit
