@@ -76,12 +76,6 @@ def get_definition_files(directory=rule_dir):
 		except OSError as e:
 			raise
 
-def get_definitions(directory=rule_dir):
-	files = get_definition_files(directory)
-	objects = map(lambda f: yaml_from_file(f), files)
-	objects = list(objects)
-	return objects
-
 def definition_from_yaml(yaml_object):
 	return Definition(yaml_object)
 
@@ -90,6 +84,13 @@ def yaml_from_file(path):
 	y = yaml.load(file)
 	file.close()
 	return y
+
+def get_definitions(directory=rule_dir):
+	files = get_definition_files(directory)
+	objects = map(yaml_from_file, files)
+	definitions = map(definition_from_yaml, objects)
+	return list(definitions)
+
 
 def here_script(directory, definitions, command):
 	# print("here_script(", directory, definitions, command, ")")
@@ -110,7 +111,7 @@ if __name__ == "__main__":
 	group.add_argument('command', nargs='?', default='default')
 	args = parser.parse_args()
 
-	definitions = list(map(definition_from_yaml, get_definitions()))
+	definitions = get_definitions()
 
 	if args.what != None:
 		available_scripts(args.directory, definitions, args.what)
