@@ -1,0 +1,6 @@
+rules:
+    - any:
+        - contains: foo
+        - contains: .git/
+        - contains: bar
+actions: {}

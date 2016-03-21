@@ -1,8 +1,8 @@
 rules:
-    path: '~/Music/'
+    - path: ~/Music/
 actions:
     -
-        binding: 's'
-        title: 'sync'
-        description: 'Synchronize with twilight.schube.eu:/home/plex/Music/.'
-        shell: 'echo "Sync!"'
+        binding: s
+        title: sync
+        description: Synchronize with my Plex's Music/ folder.
+        shell: echo "Sync!"

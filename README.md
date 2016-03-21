@@ -1,7 +1,7 @@
 # here-script
 Simple shell utility to quickly run scripts in specific directories.
 
-Have commands you anly run in certain places of your filesystem only a few keystrokes away ! Define rules to match your current working directory and make your commands available immediately.
+Have commands you only run in certain places of your filesystem only a few keystrokes away ! Define rules to match your current working directory and make your commands available immediately.
 
 ## Rulebooks
 
@@ -9,7 +9,7 @@ The rulebooks define which directories will have which _here-scripts_. For examp
 
 ``` YAML
 rules: # Match directories containing a `.git/` directory
-    contains: '.git/'
+    - contains: .git/
 actions:
     - # use with `hs l`
         binding: l

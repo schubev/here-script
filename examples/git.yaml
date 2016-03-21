@@ -1,17 +1,17 @@
-rules:
-    contains: '.git/'
+rules: # Match directories containing a `.git/` directory
+    - contains: '.git/'
 actions:
-    -
+    - # hs l
         binding: l
         title: pull
         description: Pull from origin.
         shell: git pull
-    -
+    - # hs p
         binding: p
         title: push
         description: Push to origin
         shell: git push
-    -
+    - # hs c
         binding: c
         title: commit
         description: Commit
