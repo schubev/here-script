@@ -7,7 +7,7 @@ import functools
 
 rule_dir = os.path.expanduser("~/.config/here-script/rules/")
 
-class Definition:
+class Rulebook:
 	def __init__(self, yaml_object):
 		self.yaml_rules = yaml_object['rules']
 		self.yaml_actions = yaml_object['actions']
@@ -104,22 +104,22 @@ def binding_dict(actions_iterable):
 		d[b] = action
 	return d
 
-def get_definition_files(directory=rule_dir):
+def get_rulebook_files(directory=rule_dir):
 	if os.path.exists(directory):
 		files = map(lambda f: os.path.join(directory, f), os.listdir(directory))
 		return filter(lambda f: os.path.isfile(f), files)
 	else:
 		try:
 			init_rule_dir()
-			return get_definition_files(directory)
+			return get_rulebook_files(directory)
 		except OSError as e:
 			raise
 
-def filter_matching_definitions(definitions, directory):
-	return filter(lambda d: d.rules_test(directory), definitions)
+def filter_matching_rulebooks(rulebooks, directory):
+	return filter(lambda d: d.rules_test(directory), rulebooks)
 
-def definition_from_yaml(yaml_object):
-	return Definition(yaml_object)
+def rulebook_from_yaml(yaml_object):
+	return Rulebook(yaml_object)
 
 def yaml_from_file(path):
 	file = open(path, 'r')
@@ -127,30 +127,30 @@ def yaml_from_file(path):
 	file.close()
 	return y
 
-def get_definitions(directory=rule_dir):
-	files = get_definition_files(directory)
+def get_rulebooks(directory=rule_dir):
+	files = get_rulebook_files(directory)
 	objects = map(yaml_from_file, files)
-	definitions = map(definition_from_yaml, objects)
-	return definitions
+	rulebooks = map(rulebook_from_yaml, objects)
+	return rulebooks
 
-def get_actions(definitions_iterable):
+def get_actions(rulebooks_iterable):
 	actions = []
-	for definition in definitions_iterable:
-		actions += definition.actions
+	for rulebook in rulebooks_iterable:
+		actions += rulebook.actions
 	return actions
 
-def here_script(directory, definitions, command):
-	active_definitions = filter_matching_definitions(definitions, directory)
-	actions = get_actions(active_definitions)
+def here_script(directory, rulebooks, command):
+	active_rulebooks = filter_matching_rulebooks(rulebooks, directory)
+	actions = get_actions(active_rulebooks)
 	actions = binding_dict(actions)
 	if command in actions:
 		os.execl("/bin/sh", "sh", "-c", actions[command].shell)
 	else:
 		print('%s is undefined.' % command)
 
-def available_scripts(directory, definitions, format):
-	active_definitions = filter_matching_definitions(definitions, directory)
-	actions = get_actions(active_definitions)
+def available_scripts(directory, rulebooks, format):
+	active_rulebooks = filter_matching_rulebooks(rulebooks, directory)
+	actions = get_actions(active_rulebooks)
 	actions = binding_dict(actions)
 
 	if format == 'pretty':
@@ -171,9 +171,9 @@ if __name__ == "__main__":
 	group.add_argument('command', nargs='?', default='default')
 	args = parser.parse_args()
 
-	definitions = get_definitions()
+	rulebooks = get_rulebooks()
 
 	if args.what != None:
-		available_scripts(args.directory, definitions, args.what)
+		available_scripts(args.directory, rulebooks, args.what)
 	elif args.command != None:
-		here_script(args.directory, definitions, args.command)
+		here_script(args.directory, rulebooks, args.command)
