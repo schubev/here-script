@@ -154,11 +154,11 @@ def available_scripts(directory, rulebooks, format):
 	actions = binding_dict(actions)
 
 	if format == 'pretty':
-		for binding, action in actions.items():
+		for binding, action in sorted(actions.items()):
 			print('\t%s\t%s' % (binding, action.description))
 	elif format == 'oneline':
 		parts = ['%s %s' % (binding, action.title) for binding, action in actions.items()]
-		print(', '.join(parts))
+		print(', '.join(sorted(parts)))
 
 # -w --what prints the available commands in different formats
 # -C changes the target directory from the default, which is the current working directory
