@@ -146,7 +146,16 @@ def here_script(directory, definitions, command):
 	print(actions)
 
 def available_scripts(directory, definitions, format):
-	print("available_scripts(", directory, definitions, format, ")")
+	active_definitions = filter_matching_definitions(definitions, directory)
+	actions = get_actions(active_definitions)
+	actions = binding_dict(actions)
+
+	if format == 'pretty':
+		for binding, action in actions.items():
+			print('\t%s\t%s' % (binding, action.description))
+	elif format == 'oneline':
+		parts = ['%s %s' % (binding, action.title) for binding, action in actions.items()]
+		print(', '.join(parts))
 
 # -w --what prints the available commands in different formats
 # -C changes the target directory from the default, which is the current working directory
@@ -155,7 +164,7 @@ if __name__ == "__main__":
 	parser = argparse.ArgumentParser(description='Quickly launch scripts here.')
 	parser.add_argument('-C', nargs='?', default=os.getcwd(), dest='directory', help='Run as if in DIRECTORY.')
 	group = parser.add_mutually_exclusive_group(required=False)
-	group.add_argument('-w', '--what', nargs='?', choices=['pretty', 'oneline', 'raw'], const='pretty', help="Run no command and print available commands for the directory instead. Defaults to 'pretty'.")
+	group.add_argument('-w', '--what', nargs='?', choices=['pretty', 'oneline'], const='pretty', help="Run no command and print available commands for the directory instead. Defaults to 'pretty'.")
 	group.add_argument('command', nargs='?', default='default')
 	args = parser.parse_args()
 
