@@ -24,7 +24,12 @@ class Action:
 		assert type(self.title) is str
 		assert type(self.shell) is str
 		assert type(self.binding) is str
+
+	def __str__(self):
+		return self.title
 	
+	def __repr__(self):
+		return self.__str__()
 
 def test_from_rules(rules):
 	def test_rule(rule):
@@ -56,14 +61,12 @@ def test_from_rules(rules):
 			result = any(map(lambda f: (f + '/') == argument and os.path.isdir('./' + f), os.listdir(directory)))
 		else:
 			result = any(map(lambda f: f == argument, os.listdir(directory)))
-		print("CONTAINS", directory, argument, result)
 		return result
 
 	def path_rule(argument, directory):
 		current = os.path.realpath(directory)
 		rule_target = os.path.realpath(os.path.expanduser(argument))
 		result = current.startswith(rule_target)
-		print("PATH", current, rule_target, result)
 		return result
 
 	def test_all_of(rules):
@@ -72,11 +75,34 @@ def test_from_rules(rules):
 	def test_any_of(rules):
 		return lambda d: any(map(lambda r: test_rule(r)(d), rules))
 
-	print("Building rule function for", rules)
 	return test_all_of(rules)
+
+def incr_str(s):
+	assert len(s) > 0
+	head = s[:len(s) - 1]
+	last = s[len(s) - 1]
+	if last.isalpha() and last.upper() != 'Z':
+		return head + chr(ord(last) + 1)
+	elif last == 'Z':
+		return head + 'a'
+	elif last == 'z':
+		return head + '0'
+	elif last.isdigit() and last != '9':
+		return head + chr(ord(last) + 1)
+	else:
+		return s + 'A'
 
 def init_rule_dir():
 	os.makedirs(rule_dir)
+
+def binding_dict(actions_iterable):
+	d = {}
+	for action in actions_iterable:
+		b = action.binding
+		while b in d:
+			b = incr_str(b)
+		d[b] = action
+	return d
 
 def get_definition_files(directory=rule_dir):
 	if os.path.exists(directory):
@@ -107,10 +133,17 @@ def get_definitions(directory=rule_dir):
 	definitions = map(definition_from_yaml, objects)
 	return definitions
 
+def get_actions(definitions_iterable):
+	actions = []
+	for definition in definitions_iterable:
+		actions += definition.actions
+	return actions
+
 def here_script(directory, definitions, command):
-	# print("here_script(", directory, definitions, command, ")")
-	for d in definitions:
-		print(d.rules_test(directory))
+	active_definitions = filter_matching_definitions(definitions, directory)
+	actions = get_actions(active_definitions)
+	actions = binding_dict(actions)
+	print(actions)
 
 def available_scripts(directory, definitions, format):
 	print("available_scripts(", directory, definitions, format, ")")
@@ -126,12 +159,7 @@ if __name__ == "__main__":
 	group.add_argument('command', nargs='?', default='default')
 	args = parser.parse_args()
 
-	definitions = list(get_definitions())
-
-	for d in definitions:
-		print(d.yaml_rules)
-		print(d.yaml_actions)
-		print()
+	definitions = get_definitions()
 
 	if args.what != None:
 		available_scripts(args.directory, definitions, args.what)

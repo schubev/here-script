@@ -9,3 +9,8 @@ actions:
         title: foo
         description: Foo some bar
         shell: echo foo!
+    -
+        binding: p
+        title: papa
+        description: Papa Charlie
+        shell: echo PC
