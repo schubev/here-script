@@ -143,7 +143,10 @@ def here_script(directory, definitions, command):
 	active_definitions = filter_matching_definitions(definitions, directory)
 	actions = get_actions(active_definitions)
 	actions = binding_dict(actions)
-	print(actions)
+	if command in actions:
+		os.execl("/bin/sh", "sh", "-c", actions[command].shell)
+	else:
+		print('%s is undefined.' % command)
 
 def available_scripts(directory, definitions, format):
 	active_definitions = filter_matching_definitions(definitions, directory)
