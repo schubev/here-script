@@ -4,8 +4,8 @@ rules:
     - contains: test/
     - path: ~/Code
 actions:
-    foo:
-         binding: f
-         title: foo
-         description: Foo some bar
-         shell: echo foo!
+    -
+        binding: f
+        title: foo
+        description: Foo some bar
+        shell: echo foo!

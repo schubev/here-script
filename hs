@@ -9,9 +9,22 @@ rule_dir = os.path.expanduser("~/.config/here-script/rules/")
 
 class Definition:
 	def __init__(self, yaml_object):
-		self.rules = yaml_object['rules']
-		self.actions = yaml_object['actions']
-		self.rules_test = test_from_rules(self.rules)
+		self.yaml_rules = yaml_object['rules']
+		self.yaml_actions = yaml_object['actions']
+		self.rules_test = test_from_rules(self.yaml_rules)
+		self.actions = list(map(lambda y: Action(y), self.yaml_actions))
+
+class Action:
+	def __init__(self, yaml_object):
+		self.description = yaml_object['description']
+		self.title = yaml_object['title']
+		self.shell = yaml_object['shell']
+		self.binding = yaml_object['binding']
+		assert type(self.description) is str
+		assert type(self.title) is str
+		assert type(self.shell) is str
+		assert type(self.binding) is str
+	
 
 def test_from_rules(rules):
 	def test_rule(rule):
@@ -76,6 +89,9 @@ def get_definition_files(directory=rule_dir):
 		except OSError as e:
 			raise
 
+def filter_matching_definitions(definitions, directory):
+	return filter(lambda d: d.rules_test(directory), definitions)
+
 def definition_from_yaml(yaml_object):
 	return Definition(yaml_object)
 
@@ -89,8 +105,7 @@ def get_definitions(directory=rule_dir):
 	files = get_definition_files(directory)
 	objects = map(yaml_from_file, files)
 	definitions = map(definition_from_yaml, objects)
-	return list(definitions)
-
+	return definitions
 
 def here_script(directory, definitions, command):
 	# print("here_script(", directory, definitions, command, ")")
@@ -111,7 +126,12 @@ if __name__ == "__main__":
 	group.add_argument('command', nargs='?', default='default')
 	args = parser.parse_args()
 
-	definitions = get_definitions()
+	definitions = list(get_definitions())
+
+	for d in definitions:
+		print(d.yaml_rules)
+		print(d.yaml_actions)
+		print()
 
 	if args.what != None:
 		available_scripts(args.directory, definitions, args.what)
