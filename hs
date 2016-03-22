@@ -47,6 +47,7 @@ def here_script(directory, rbs, command):
 	active_rbs = filter_matching_rulebooks(rbs, directory)
 	actions = get_actions(active_rbs)
 	actions = binding_dict(actions)
+
 	if command in actions:
 		os.execl("/bin/sh", "sh", "-c", actions[command].shell)
 	else:

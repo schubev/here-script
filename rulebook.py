@@ -2,11 +2,19 @@ from action import Action
 import functools
 import os
 import yaml
+import marshal
+try:
+	import cPickle as pickle
+except:
+	import pickle
 
 rule_dir = os.path.expanduser("~/.config/here-script/rules/")
+crule_dir = os.path.expanduser("~/.config/here-script/.crules")
 
-def init_rule_dir():
+if not os.path.exists(rule_dir):
 	os.makedirs(rule_dir)
+if not os.path.exists(crule_dir):
+	os.makedirs(crule_dir)
 
 class Rulebook:
 	def __init__(self, yaml_object):
@@ -67,22 +75,49 @@ def yaml_from_file(path):
 	file.close()
 	return y
 
+def yaml_from_bin(path):
+	file = open(path, 'rb')
+	y = pickle.load(file)
+	file.close()
+	return y
+
 def from_yaml(yaml_object):
 	return Rulebook(yaml_object)
 
 def get_files(directory=rule_dir):
-	if os.path.exists(directory):
-		files = map(lambda f: os.path.join(directory, f), os.listdir(directory))
-		return filter(lambda f: os.path.isfile(f), files)
-	else:
-		try:
-			init_rule_dir()
-			return get_files(directory)
-		except OSError as e:
-			raise
+	files = map(lambda f: os.path.join(directory, f), os.listdir(directory))
+	return filter(lambda f: os.path.isfile(f), files)
 
-def get_rulebooks(directory=rule_dir):
-	files = get_files(directory)
-	objects = map(yaml_from_file, files)
+def cname_of(path, cdirectory=crule_dir):
+	base = os.path.basename(path)
+	return os.path.join(cdirectory, base) + '.bin'
+
+def name_of(path, directory=rule_dir):
+	base = os.path.basename(path)
+	assert base.endswith('.bin')
+	return os.path.join(directory, base[:len(base) - 4])
+
+def get_rulebooks(directory=rule_dir, cdirectory=crule_dir):
+	if cdirectory == None: 
+		files = get_files(directory)
+		objects = map(yaml_from_file, files)
+	else:
+		files = list(get_files(directory))
+		cfiles = list(get_files(cdirectory))
+		for cf in cfiles:
+			if cf.endswith('.bin'):
+				fn = name_of(cf)
+				if fn not in files:
+					os.remove(cf)
+		cfiles = list(get_files(cdirectory))
+		for f in files:
+			cfn = cname_of(f)
+			if cfn not in cfiles or os.path.getmtime(cfn) < os.path.getmtime(f):
+				y = yaml_from_file(f)
+				cfile = open(cfn, 'wb')
+				pickle.dump(y, cfile)
+				cfile.close()
+		objects = map(yaml_from_bin, cfiles)
+
 	rulebooks = map(from_yaml, objects)
 	return rulebooks
